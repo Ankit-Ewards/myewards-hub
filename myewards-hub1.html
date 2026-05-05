@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eWards Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple:       #7c3aed;
+    --purple-light: #ede9fe;
+    --purple-mid:   #c4b5fd;
+    --purple-dark:  #5b21b6;
+    --orange:       #f97316;
+    --orange-light: #fff7ed;
+    --bg:           #f5f3ff;
+    --card:         #ffffff;
+    --text:         #1e1040;
+    --muted:        #7c6fa0;
+    --border:       rgba(124,58,237,0.1);
+    --sidebar-bg:   #2d1f6e;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    width: 230px; min-height: 100vh;
+    background: var(--sidebar-bg);
+    padding: 2rem 1.25rem;
+    display: flex; flex-direction: column; gap: 2rem;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 100; transition: transform 0.25s ease;
+  }
+
+  .brand { padding: 0 8px; }
+  .brand-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -1px;
+  }
+  .brand-name span { color: var(--orange); }
+  .brand-sub {
+    font-size: 11px; color: rgba(255,255,255,0.35);
+    letter-spacing: 2px; text-transform: uppercase; margin-top: 3px;
+  }
+
+  .nav-divider {
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: rgba(255,255,255,0.25); padding: 0 12px; margin-top: 4px;
+  }
+
+  nav { display: flex; flex-direction: column; gap: 3px; }
+  nav a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 9px;
+    font-size: 13.5px; color: rgba(255,255,255,0.55);
+    text-decoration: none; cursor: pointer; transition: all 0.15s;
+  }
+  nav a:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  nav a.active { background: rgba(249,115,22,0.18); color: #fff; }
+  .nav-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .sidebar-footer {
+    margin-top: auto; font-size: 11px;
+    color: rgba(255,255,255,0.2); padding: 0 12px; line-height: 1.8;
+  }
+  .status-dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: #4ade80; margin-right: 5px; vertical-align: middle;
+  }
+
+  /* ── MOBILE TOP BAR ── */
+  .mobile-topbar {
+    display: none; position: fixed; top: 0; left: 0; right: 0;
+    height: 56px; background: var(--sidebar-bg);
+    align-items: center; justify-content: space-between;
+    padding: 0 1rem; z-index: 200;
+  }
+  .mobile-brand {
+    font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: #fff;
+  }
+  .mobile-brand span { color: var(--orange); }
+  .hamburger {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: rgba(255,255,255,0.1); border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  }
+  .hamburger span { display: block; width: 18px; height: 2px; background: #fff; border-radius: 2px; }
+
+  .drawer-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 150;
+  }
+  .drawer-overlay.open { display: block; }
+
+  /* ── MAIN ── */
+  main {
+    margin-left: 230px; flex: 1;
+    padding: 2.5rem 2.5rem 5rem;
+  }
+
+  .topbar {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; margin-bottom: 2rem; gap: 1rem;
+  }
+  .topbar-left h1 {
+    font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800;
+    letter-spacing: -0.8px; color: var(--text);
+  }
+  .topbar-left p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+  .search-wrap { position: relative; }
+  .search-wrap svg {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%); color: var(--muted);
+  }
+  #search {
+    border: 1.5px solid var(--border); background: white;
+    border-radius: 10px; padding: 9px 16px 9px 38px;
+    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    width: 220px; outline: none; transition: border-color 0.15s; color: var(--text);
+  }
+  #search:focus { border-color: var(--purple); }
+  #search::placeholder { color: var(--muted); }
+
+  /* ── FILTER CHIPS ── */
+  .chips {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.75rem;
+  }
+  .chip {
+    padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: white; font-size: 12px; font-weight: 500; cursor: pointer;
+    color: var(--muted); transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+  }
+  .chip:hover { border-color: var(--purple-mid); color: var(--purple); }
+  .chip.active {
+    background: var(--purple); border-color: var(--purple); color: white;
+  }
+
+  /* ── CARDS GRID — single unified grid ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 260px));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 1.25rem 1.25rem 1rem;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; gap: 10px;
+    position: relative; overflow: hidden; transition: all 0.18s ease;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; border-radius: 16px 16px 0 0;
+    background: var(--purple); opacity: 0; transition: opacity 0.18s;
+  }
+  .card:hover {
+    border-color: var(--purple-mid);
+    box-shadow: 0 6px 28px rgba(124,58,237,0.1);
+    transform: translateY(-2px);
+  }
+  .card:hover::before { opacity: 1; }
+
+  .card-top { display: flex; align-items: center; justify-content: space-between; }
+
+  .card-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; background: var(--purple-light);
+  }
+  .card-icon.orange { background: var(--orange-light); }
+
+  .card-arrow {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 14px; transition: all 0.15s;
+  }
+  .card:hover .card-arrow { background: var(--orange); color: white; }
+
+  .card-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--text);
+  }
+  .card-url { font-size: 11px; color: var(--purple); font-style: italic; margin-top: 1px; }
+  .card-desc { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+  .pill {
+    display: inline-block; font-size: 10px; font-weight: 500;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 20px; width: fit-content;
+    background: var(--purple-light); color: var(--purple-dark);
+  }
+  .pill.orange { background: var(--orange-light); color: #c2410c; }
+
+  /* ── MOBILE BOTTOM NAV ── */
+  .bottom-nav {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--sidebar-bg); padding: 8px 0 12px; z-index: 200;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .bottom-nav-inner { display: flex; justify-content: space-around; align-items: center; }
+  .bnav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 4px 8px; border-radius: 10px; cursor: pointer;
+    color: rgba(255,255,255,0.45); font-size: 10px;
+    transition: all 0.15s; border: none; background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .bnav-item span { font-size: 18px; line-height: 1; }
+  .bnav-item.active { color: #fff; }
+  .bnav-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: transparent; transition: background 0.15s;
+  }
+  .bnav-item.active .bnav-dot { background: var(--orange); }
+
+  .hidden { display: none !important; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    aside { width: 260px; transform: translateX(-100%); }
+    aside.open { transform: translateX(0); }
+    .mobile-topbar { display: flex; }
+    .bottom-nav    { display: block; }
+    main { margin-left: 0; padding: 72px 1rem 90px; }
+    .topbar { flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .topbar-left h1 { font-size: 22px; }
+    #search { width: 100%; }
+    .search-wrap { width: 100%; }
+    .chips { display: none; }
+    .cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card { padding: 1rem; }
+    .card-icon { width: 38px; height: 38px; font-size: 17px; }
+    .card-name { font-size: 13px; }
+    .card-desc { display: none; }
+  }
+
+  @media (max-width: 400px) {
+    .cards { grid-template-columns: 1fr; }
+    .card-desc { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<!-- MOBILE TOP BAR -->
+<div class="mobile-topbar">
+  <div class="mobile-brand">e<span>Wards</span></div>
+  <button class="hamburger" onclick="toggleDrawer()">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="brand">
+    <div class="brand-name">e<span>Wards</span></div>
+    <div class="brand-sub">Internal Hub</div>
+  </div>
+  <nav>
+    <div class="nav-divider">Navigate</div>
+    <a class="active" onclick="filter('all', this, null)">
+      <span class="nav-dot" style="background:rgba(255,255,255,0.3)"></span> All Tools
+    </a>
+    <a onclick="filter('service', this, 'c-service')">
+      <span class="nav-dot" style="background:#f97316"></span> Service Hub
+    </a>
+    <a onclick="filter('hr', this, 'c-hr')">
+      <span class="nav-dot" style="background:#c4b5fd"></span> Athena · HR
+    </a>
+    <a onclick="filter('finance', this, 'c-finance')">
+      <span class="nav-dot" style="background:#f97316"></span> Revenue
+    </a>
+    <a onclick="filter('dev', this, 'c-dev')">
+      <span class="nav-dot" style="background:#c4b5fd"></span> Tech Backlog
+    </a>
+    <a onclick="filter('lms', this, 'c-lms')">
+      <span class="nav-dot" style="background:#f97316"></span> Learning Hub
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="status-dot"></span> 5 tools live<br>
+    eWards · 2025
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main>
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Hey team 👋</h1>
+      <p>All your internal tools — one place, one bookmark.</p>
+    </div>
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="6.5" cy="6.5" r="5.5"/><path d="m11 11 3 3"/>
+      </svg>
+      <input type="text" id="search" placeholder="Search tools…" oninput="searchCards()" />
+    </div>
+  </div>
+
+  <!-- FILTER CHIPS -->
+  <div class="chips">
+    <button class="chip active" onclick="filter('all', this, null)">All Tools</button>
+    <button class="chip" onclick="filter('service', this, 'c-service')">🎫 Service Hub</button>
+    <button class="chip" onclick="filter('hr', this, 'c-hr')">👥 Athena · HR</button>
+    <button class="chip" onclick="filter('finance', this, 'c-finance')">💰 Revenue</button>
+    <button class="chip" onclick="filter('dev', this, 'c-dev')">🛠️ Tech Backlog</button>
+    <button class="chip" onclick="filter('lms', this, 'c-lms')">🎓 Learning Hub</button>
+  </div>
+
+  <!-- ALL CARDS IN ONE GRID -->
+  <div class="cards" id="card-grid">
+
+    <a class="card" href="https://servicing.myewards.com" target="_blank" data-dept="service">
+      <div class="card-top">
+        <div class="card-icon orange">🎫</div>
+        <div class="card-arrow">↗</div>
+      </div>
+      <div>
+        <div class="card-name">Service Hub</div>
+        <div class="card-url">servicing.myewards.com</div>
+      </div>
+      <div class="card-desc">Client SLA tracking, ticket management, work logs & sales views</div>
+      <span class="pill orange">Ticketing</span>
+    </a>
+
+    <a class="card" href="https://people.myewards.com" target="_blank" data-dept="hr">
+      <div class="card-top">
+        <div class="card-icon">👥</div>
+        <div class="card-arrow">↗</div>
+      </div>
+      <div>
+        <div class="card-name">Athena</div>
+        <div class="card-url">people.myewards.com</div>
+      </div>
+      <div class="card-desc">Employee management, leave, reimbursement, attendance & salary</div>
+      <span class="pill">HRMS</span>
+    </a>
+
+    <a class="card" href="https://finance.myewards.com" target="_blank" data-dept="finance">
+      <div class="card-top">
+        <div class="card-icon orange">💰</div>
+        <div class="card-arrow">↗</div>
+      </div>
+      <div>
+        <div class="card-name">Revenue Hub</div>
+        <div class="card-url">finance.myewards.com</div>
+      </div>
+      <div class="card-desc">MRR dashboard, revenue logging & invoicing</div>
+      <span class="pill orange">Finance</span>
+    </a>
+
+    <a class="card" href="https://build.myewards.com" target="_blank" data-dept="dev">
+      <div class="card-top">
+        <div class="card-icon">🛠️</div>
+        <div class="card-arrow">↗</div>
+      </div>
+      <div>
+        <div class="card-name">Build</div>
+        <div class="card-url">build.myewards.com</div>
+      </div>
+      <div class="card-desc">Project tracking, backlog, dev status, release sheets & work logs</div>
+      <span class="pill">Dev</span>
+    </a>
+
+    <a class="card" href="https://learninghub.myewards.com" target="_blank" data-dept="lms">
+      <div class="card-top">
+        <div class="card-icon orange">🎓</div>
+        <div class="card-arrow">↗</div>
+      </div>
+      <div>
+        <div class="card-name">Learning Hub</div>
+        <div class="card-url">learninghub.myewards.com</div>
+      </div>
+      <div class="card-desc">Training, quizzes, certifications & content management</div>
+      <span class="pill orange">LMS</span>
+    </a>
+
+  </div>
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" onclick="mobileFilter(this,'all')">
+      <span>🏠</span> All <div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" onclick="mobileFilter(this,'service')">
+      <span>🎫</span> Service <div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" onclick="mobileFilter(this,'hr')">
+      <span>👥</span> HR <div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" onclick="mobileFilter(this,'finance')">
+      <span>💰</span> Revenue <div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" onclick="mobileFilter(this,'dev')">
+      <span>🛠️</span> Build <div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" onclick="mobileFilter(this,'lms')">
+      <span>🎓</span> Learn <div class="bnav-dot"></div>
+    </button>
+  </div>
+</nav>
+
+<script>
+  let currentDept = 'all';
+
+  function filter(dept, el, chipClass) {
+    currentDept = dept;
+
+    // sync sidebar
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    if (el.tagName === 'A') el.classList.add('active');
+
+    // sync chips
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    if (el.tagName === 'BUTTON') el.classList.add('active');
+
+    applyFilter(dept);
+    closeSidebar();
+  }
+
+  function applyFilter(dept) {
+    document.querySelectorAll('.card').forEach(c => {
+      c.classList.toggle('hidden', dept !== 'all' && c.dataset.dept !== dept);
+    });
+  }
+
+  function mobileFilter(el, dept) {
+    currentDept = dept;
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    applyFilter(dept);
+  }
+
+  function searchCards() {
+    const q = document.getElementById('search').value.toLowerCase();
+    document.querySelectorAll('.card').forEach(c => {
+      const matchesSearch = c.innerText.toLowerCase().includes(q);
+      const matchesDept = currentDept === 'all' || c.dataset.dept === currentDept;
+      c.classList.toggle('hidden', !matchesSearch || !matchesDept);
+    });
+  }
+
+  function toggleDrawer() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+  }
+
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+</script>
+</body>
+</html>
